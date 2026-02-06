@@ -55,8 +55,9 @@ cp .env.example ~/.local/share/dotfile-automation/
 # 4. Make scripts executable
 chmod +x ~/.local/share/dotfile-automation/scripts/*.sh
 
-# 5. Create your .env config
+# 5. Create your .env config (copy the template and customize)
 cp ~/.local/share/dotfile-automation/.env.example ~/.local/share/dotfile-automation/.env
+# Optional: edit to customize paths and feature flags
 vi ~/.local/share/dotfile-automation/.env
 
 # 6. Create command symlinks
@@ -72,6 +73,52 @@ source ~/.zshenv
 cp examples/dotfiles.conf.example ~/.dotfiles/dotfiles.conf
 vi ~/.dotfiles/dotfiles.conf
 ```
+
+## Understanding the .env file
+
+### What is .env?
+
+The `.env` file is a **shell configuration template** that all scripts in dotfile-automation read on startup.
+
+- **Location after installation:** `~/.local/share/dotfile-automation/.env`
+- **Source:** Created by copying `.env.example` from the repository
+- **Purpose:** Tells scripts where your dotfiles are, which tools to migrate, and where to put files
+
+### How scripts use .env
+
+Every script begins with:
+
+```bash
+# In scripts/lib.sh:
+load_env() {
+    local env_file="${DOTFILE_AUTOMATION_DIR}/.env"
+    if [[ -f "$env_file" ]]; then
+        source "$env_file"  # Reads your configuration
+    fi
+    # Apply defaults if not set
+    DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
+    ...
+}
+```
+
+This means:
+1. Your scripts read `.env` to get your preferences
+2. If a variable is missing, sensible defaults are used
+3. You can customize paths and feature flags without editing script code
+
+### Do I need to change .env?
+
+**Short answer:** Probably not. The defaults work for most people.
+
+**Change .env if:**
+- Your dotfiles are somewhere other than `~/.dotfiles`
+- You use bash instead of zsh
+- You don't use certain tools (Docker, nvm, etc.) and want to skip their migration
+- You want config files in different XDG locations
+
+Otherwise, the installer creates a `.env` that just works.
+
+---
 
 ## Post-install setup
 
@@ -125,26 +172,56 @@ symlink-check.sh
 home-cleanup.sh
 ```
 
-### 4. Customize .env (optional)
+### 4. Understand and customize .env (optional)
 
-Edit the configuration file to match your setup:
+The `.env` file is a **configuration file that all scripts read** to know:
+- Where your dotfiles repository is
+- Which tools to migrate in HOME cleanup
+- Where to put config, cache, and data files
+
+**Location:** `~/.local/share/dotfile-automation/.env`
+
+The file is created from `.env.example` during installation. You can customize it:
 
 ```bash
 vi ~/.local/share/dotfile-automation/.env
 ```
 
-Key settings:
+#### Core configuration (usually fine as-is)
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DOTFILES_DIR` | `$HOME/.dotfiles` | Path to your dotfiles repository |
 | `CONF_FILE` | `$DOTFILES_DIR/dotfiles.conf` | Path to your symlink registry |
-| `SHELL_ENV_FILE` | `$HOME/.zshenv` | Shell config for env var exports |
-| `INCLUDE_DOCKER` | `true` | Include Docker in HOME cleanup |
-| `INCLUDE_NVM` | `true` | Include nvm in HOME cleanup |
-| `INCLUDE_BUN` | `true` | Include bun in HOME cleanup |
+| `SHELL_ENV_FILE` | `$HOME/.zshenv` | Shell config for env var exports (use `~/.bashrc` for bash) |
 
-See `.env.example` for the full list.
+#### XDG Base Directory paths
+
+These determine where tools store files when migrated by `home-cleanup.sh`:
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `XDG_CONFIG_HOME` | `$HOME/.config` | Configuration files (e.g., `~/.config/docker`) |
+| `XDG_CACHE_HOME` | `$HOME/.cache` | Cache files (e.g., `~/.cache/npm`) |
+| `XDG_DATA_HOME` | `$HOME/.local/share` | Application data (e.g., `~/.local/share/nvm`) |
+| `XDG_STATE_HOME` | `$HOME/.local/state` | Runtime state and logs |
+
+#### Feature flags (customize which tools to migrate)
+
+Enable/disable specific tool migrations in `home-cleanup.sh`:
+
+```bash
+# Set to "false" to skip tools you don't use
+INCLUDE_DOCKER="true"        # Docker configuration
+INCLUDE_NVM="true"           # Node Version Manager
+INCLUDE_BUN="true"           # Bun package manager
+INCLUDE_PYTHON="true"        # Python packages
+# ... and more (see .env.example for complete list)
+```
+
+**No need to edit:** All settings have sensible defaults. The installer creates your `.env` automatically. Only customize if your setup differs from the defaults (e.g., you use bash instead of zsh, or your dotfiles live elsewhere).
+
+See `.env.example` for the complete list of all available variables and detailed explanations.
 
 ## Updating
 
