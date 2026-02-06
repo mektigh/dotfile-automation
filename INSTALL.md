@@ -20,7 +20,7 @@ python3 --version     # Should be 3.9+
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/dotfile-automation.git /tmp/dotfile-automation
+git clone https://github.com/mektigh/dotfile-automation.git /tmp/dotfile-automation
 
 # Run the installer
 /tmp/dotfile-automation/examples/install.sh
@@ -39,7 +39,7 @@ If you prefer to install manually:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/YOUR_USERNAME/dotfile-automation.git
+git clone https://github.com/mektigh/dotfile-automation.git
 cd dotfile-automation
 
 # 2. Create the install directory

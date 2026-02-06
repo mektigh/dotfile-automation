@@ -24,7 +24,7 @@ dotfile-automation solves all three with five core scripts and a config file.
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/YOUR_USERNAME/dotfile-automation.git
+git clone https://github.com/mektigh/dotfile-automation.git
 cd dotfile-automation
 
 # 2. Run the installer
