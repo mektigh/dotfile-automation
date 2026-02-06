@@ -6,6 +6,7 @@ Complete command reference for dotfile-automation.
 
 - [symlink-check.sh](#symlink-checksh) -- Validate and repair symlinks
 - [add-dotfile.sh](#add-dotfilesh) -- Onboard new dotfiles
+- [migrate-directory.sh](#migrate-directorysh) -- Generic directory migration
 - [home-cleanup.sh](#home-cleanupsh) -- Organize HOME directory
 - [Configuration](#configuration) -- The .env file
 - [The dotfiles.conf format](#the-dotfilesconf-format)
@@ -167,6 +168,156 @@ Done
 - Detects if the file is already managed (symlink to dotfiles repo)
 - Detects duplicate entries in `dotfiles.conf`
 - Requires explicit confirmation before making changes
+
+---
+
+## migrate-directory.sh
+
+Generic directory migration tool for moving any directory from `$HOME` to XDG-compliant locations.
+
+### Basic usage
+
+```bash
+# Preview migration (dry-run, no changes)
+migrate-directory.sh ~/.myapp ~/.config/myapp
+
+# Execute migration
+migrate-directory.sh ~/.myapp ~/.config/myapp --execute
+
+# Rollback to backup
+migrate-directory.sh ~/.myapp ~/.config/myapp --rollback
+```
+
+### When to use
+
+Use `migrate-directory.sh` when:
+- You install a new application that creates a directory in `$HOME`
+- You want to move it to an XDG-compliant location (e.g., `~/.config/`, `~/.local/share/`)
+- You want automatic backups and fallback symlinks
+
+Use `add-dotfile.sh` when:
+- You're managing individual configuration **files** (not directories)
+- You want to track them in your dotfiles repo
+
+### What it does
+
+1. **Validates** that SOURCE exists and DESTINATION parent exists
+2. **Creates backup** with timestamp: `SOURCE.backup.YYYYMMDD_HHMMSS`
+3. **Moves contents** from SOURCE to DESTINATION
+4. **Creates symlink** from SOURCE to DESTINATION (for backward compatibility)
+5. **Generates rollback script** for easy reversal
+
+### Example session
+
+```bash
+$ migrate-directory.sh ~/.myapp ~/.config/myapp --dry-run
+
+migrate-directory.sh
+============================================================
+
+SOURCE:      /Users/brandel/.myapp
+DESTINATION: /Users/brandel/.config/myapp
+
+Contents:
+  Size:  8.2M
+  Files: 47
+
+[DRY-RUN] No changes will be made
+
+Steps that would be performed:
+  1. Create backup:   .myapp.backup.20260206_143000
+  2. Create dest:     mkdir -p ~/.config/myapp
+  3. Move contents:   mv ~/.myapp/* ~/.config/myapp/
+  4. Create symlink:  ln -s ~/.config/myapp ~/.myapp
+
+To execute: migrate-directory.sh "~/.myapp" "~/.config/myapp" --execute
+To rollback: migrate-directory.sh "~/.myapp" "~/.config/myapp" --rollback
+```
+
+Then execute:
+
+```bash
+$ migrate-directory.sh ~/.myapp ~/.config/myapp --execute
+
+migrate-directory.sh
+============================================================
+
+SOURCE:      /Users/brandel/.myapp
+DESTINATION: /Users/brandel/.config/myapp
+
+Contents:
+  Size:  8.2M
+  Files: 47
+
+Creating backup: /Users/brandel/.myapp.backup.20260206_143000
+  [OK] Backup created
+Creating destination directory: /Users/brandel/.config/myapp
+  [INFO] Moving contents from /Users/brandel/.myapp to /Users/brandel/.config/myapp
+Creating fallback symlink: /Users/brandel/.myapp → /Users/brandel/.config/myapp
+  [OK] Migration complete!
+
+Summary:
+  Original:   /Users/brandel/.myapp (now → symlink to /Users/brandel/.config/myapp)
+  New home:   /Users/brandel/.config/myapp
+  Backup:     /Users/brandel/.myapp.backup.20260206_143000
+
+To rollback: bash /Users/brandel/.myapp.rollback.20260206_143000.sh
+```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| (none) | Dry-run mode (default, no changes) |
+| `--dry-run` | Explicit dry-run mode |
+| `--execute` | Perform the migration |
+| `--rollback` | Restore from the latest backup |
+
+### Safety features
+
+- **Dry-run by default** -- nothing changes without `--execute`
+- **Automatic backups** -- timestamped backup created before any changes
+- **Fallback symlinks** -- SOURCE becomes symlink to DESTINATION for backward compatibility
+- **Rollback script** -- auto-generated bash script to undo everything
+- **Validation** -- checks that SOURCE exists and DESTINATION parent exists
+- **Idempotent** -- can run multiple times safely
+
+### Common workflows
+
+**Install a new app and migrate immediately:**
+
+```bash
+# App creates ~/.newapp/ during installation
+# Then migrate it:
+migrate-directory.sh ~/.newapp ~/.config/newapp --execute
+
+# Done. App still works, but data is now in ~/.config/newapp/
+# Original ~/.newapp is now a symlink for backward compatibility
+```
+
+**Move cache directories:**
+
+```bash
+# Move app cache to XDG_CACHE_HOME
+migrate-directory.sh ~/.myapp-cache ~/.cache/myapp --execute
+```
+
+**Move state/data directories:**
+
+```bash
+# Move app data to XDG_DATA_HOME
+migrate-directory.sh ~/.myapp-data ~/.local/share/myapp --execute
+```
+
+**Undo a migration:**
+
+```bash
+# Find the rollback script
+ls -la ~/.myapp.rollback.*.sh
+
+# Execute it
+bash ~/.myapp.rollback.20260206_143000.sh
+```
 
 ---
 

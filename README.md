@@ -8,7 +8,7 @@ A set of shell scripts that manage, validate, and organize your dotfiles on macO
 - **HOME gets cluttered.** Every tool dumps its config, cache, and data as hidden directories in `$HOME`. Over time you end up with dozens of dotdirs that make `ls -la ~` unreadable.
 - **Dotfile management is manual.** Adding a new config file to your dotfiles repo requires remembering the correct sequence: move, symlink, register. Miss a step and things drift.
 
-dotfile-automation solves all three with four scripts and a config file.
+dotfile-automation solves all three with five core scripts and a config file.
 
 ## What it does
 
@@ -16,7 +16,8 @@ dotfile-automation solves all three with four scripts and a config file.
 |--------|---------|
 | `symlink-check.sh` | Validates all dotfile symlinks are correct, finds broken/missing/wrong-target links, optionally repairs them |
 | `add-dotfile.sh` | Onboards a new config file: moves it to your dotfiles repo, creates the symlink, registers it |
-| `home-cleanup.sh` | Migrates tool directories from `$HOME` to proper XDG locations (`~/.config`, `~/.cache`, `~/.local/share`) |
+| `migrate-directory.sh` | **Generic migration tool** — moves any directory from `$HOME` to XDG locations with automatic backup and fallback symlinks |
+| `home-cleanup.sh` | Migrates known tool directories from `$HOME` to proper XDG locations (`~/.config`, `~/.cache`, `~/.local/share`) |
 | `lib.sh` | Shared utilities used by all scripts (colors, logging, path handling, config parsing) |
 
 ## Quick start
