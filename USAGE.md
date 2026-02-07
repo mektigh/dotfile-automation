@@ -596,22 +596,29 @@ Colors are automatically disabled when output is piped or redirected. This is by
 ## FAQ
 
 **Q: Does this work on Linux?**
-A: The scripts are primarily tested on macOS. Most functionality should work on Linux, but `stat` flags differ between macOS and GNU coreutils. The `dir_size_bytes` and `dir_checksum` functions in `home-cleanup.sh` have fallbacks for both.
+
+**A:** The scripts are primarily tested on macOS. Most functionality should work on Linux, but `stat` flags differ between macOS and GNU coreutils. The `dir_size_bytes` and `dir_checksum` functions in `home-cleanup.sh` have fallbacks for both.
 
 **Q: Can I use a different dotfiles directory name?**
-A: Yes. Set `DOTFILES_DIR` in your `.env` to any path (e.g., `$HOME/dotfiles`, `$HOME/.config/dotfiles`).
+
+**A:** Yes. Set `DOTFILES_DIR` in your `.env` to any path (e.g., `$HOME/dotfiles`, `$HOME/.config/dotfiles`).
 
 **Q: What if I use bash instead of zsh?**
-A: Set `SHELL_ENV_FILE="$HOME/.bashrc"` in your `.env`. The `home-cleanup.sh` script will add environment variables there instead of `.zshenv`.
+
+**A:** Set `SHELL_ENV_FILE="$HOME/.bashrc"` in your `.env`. The `home-cleanup.sh` script will add environment variables there instead of `.zshenv`.
 
 **Q: Is it safe to run home-cleanup.sh multiple times?**
-A: Yes. It's idempotent. Already-migrated items are detected and skipped.
+
+**A:** Yes. It's idempotent. Already-migrated items are detected and skipped.
 
 **Q: How do I add a new tool to home-cleanup.sh?**
-A: Add a `migrate_entry` call in the appropriate wave function. See the existing entries for the pattern. You'll need: the source path, destination path, strategy, env var name (if applicable), and a test command.
+
+**A:** Add a `migrate_entry` call in the appropriate wave function. See the existing entries for the pattern. You'll need: the source path, destination path, strategy, env var name (if applicable), and a test command.
 
 **Q: What if I don't use some of the tools listed in home-cleanup.sh?**
-A: Set the corresponding `INCLUDE_*` variable to `"false"` in your `.env`. Or just leave it -- the script safely skips directories that don't exist.
+
+**A:** Set the corresponding `INCLUDE_*` variable to `"false"` in your `.env`. Or just leave it -- the script safely skips directories that don't exist.
 
 **Q: Can I undo a home-cleanup migration?**
-A: Yes. Run the auto-generated rollback script: `./scripts/rollback-home-cleanup.sh --execute`. It uses the manifest to reverse all migrations in the correct order.
+
+**A:** Yes. Run the auto-generated rollback script: `./scripts/rollback-home-cleanup.sh --execute`. It uses the manifest to reverse all migrations in the correct order.
